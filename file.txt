@@ -1,0 +1,36 @@
+my-news-site/
+├── .env.local             # ملف المفاتيح السرية (URL & Anon Key)
+├── public/                # الملفات الثابتة (مثل اللوجو والأيقونات)
+├── src/
+│   ├── app/               # المجلد الأساسي للصفحات (App Router)
+│   │   ├── (auth)/        # مجلد مخفي لتنظيم صفحات تسجيل الدخول (login, register)
+│   │   ├── admin/         # لوحة تحكم الكاتب (إضافة وتعديل الأخبار)
+│   │   │   └── add-news/
+│   │   │       └── page.jsx
+│   │   ├── news/          # صفحة الخبر المنفرد
+│   │   │   └── [slug]/    # صفحة ديناميكية باستخدام الرابط (Slug)
+│   │   │       └── page.jsx
+│   │   ├── category/      # صفحات الأقسام
+│   │   │   └── [categoryName]/
+│   │   │       └── page.jsx
+│   │   ├── layout.js      # التصميم العام (Navbar & Footer)
+│   │   └── page.js        # الصفحة الرئيسية للموقع
+│   │
+│   ├── components/        # المكونات القابلة لإعادة الاستخدام
+│   │   ├── ui/            # أزرار، مدخلات (مثل shadcn/ui)
+│   │   ├── Navbar.jsx
+│   │   ├── NewsCard.jsx   # كرت عرض الخبر الصغير
+│   │   ├── Footer.jsx
+│   │   └── SideBar.jsx    # القائمة الجانبية للأخبار العاجلة
+│   │
+│   ├── lib/               # إعدادات الأدوات الخارجية
+│   │   └── supabase.js    # ملف ربط السوبابيس (supabaseClient)
+│   │
+│   ├── utils/             # وظائف مساعدة (مثل تنسيق التاريخ أو الروابط)
+│   │   └── formatDate.js
+│   │
+│   └── styles/            # ملفات التنسيق (إذا لم تستخدم Tailwind داخل المكونات)
+│       └── globals.css
+│
+├── tailwind.config.js     # إعدادات Tailwind CSS
+└── package.json           # ملف المكتبات والتبعيات
