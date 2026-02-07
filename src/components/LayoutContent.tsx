@@ -8,18 +8,18 @@ import BackToTop from "@/components/BackToTop";
 export default function LayoutContent({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
 
-    // هل إحنا في صفحة لوحة التحكم أو صفحة اللوجن؟
+    // التحقق من المسارات (الداشبورد، اللوجن، والريجستر)
     const isDashboard = pathname.startsWith("/admin") || pathname.startsWith("/dashboard");
-    const isLoginPage = pathname === "/login";
+    const isAuthPage = pathname === "/login" || pathname === "/register";
 
-    // لو في اللوجن أو الداشبورد مش عايزين النوافبار والفوتر العاديين
-    const hideUI = isDashboard || isLoginPage;
+    // لو في صفحة دخول أو لوحة تحكم، هنخفي الـ UI العادي
+    const hideUI = isDashboard || isAuthPage;
 
     return (
         <>
             {!hideUI && <Navbar />}
 
-            <main className={!hideUI ? "min-h-screen" : ""}>
+            <main className={!hideUI ? "min-h-screen " : ""}>
                 {children}
             </main>
 

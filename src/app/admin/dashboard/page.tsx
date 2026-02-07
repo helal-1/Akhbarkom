@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import {
     FilePlus2,
     MonitorPlay,
@@ -98,7 +99,10 @@ export default function AdminDashboard() {
                         <span className="text-sm">معاينة الموقع</span>
                     </Link>
 
-                    <button className="w-full flex items-center gap-3 p-4 text-rose-400 font-bold hover:bg-rose-500/10 rounded-2xl transition-all">
+                    <button
+                        onClick={() => signOut({ callbackUrl: "/login" })} // <--- أضف هذا الأكشن
+                        className="w-full flex items-center gap-3 p-4 text-rose-400 font-bold hover:bg-rose-500/10 rounded-2xl transition-all"
+                    >
                         <LogOut size={18} />
                         <span className="text-sm">تسجيل الخروج</span>
                     </button>
