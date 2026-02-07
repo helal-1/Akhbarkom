@@ -8,7 +8,6 @@ import { PlusSquare, Search, Bell, Menu, LogIn, User, Loader2, LogOut, LayoutDas
 import { supabase } from "@/lib/supabase";
 import { useSession, signOut } from "next-auth/react";
 
-// تعريف شكل البيانات لنتائج البحث
 interface ArticleSearchResult {
     id: string;
     title: string;
@@ -24,7 +23,7 @@ export default function Navbar() {
     const [isSearching, setIsSearching] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
 
-    // منطق البحث
+    // منطق البحث (موجود كما هو)
     useEffect(() => {
         const fetchResults = async () => {
             if (query.trim().length < 2) {
@@ -48,9 +47,9 @@ export default function Navbar() {
 
     const isActive = (path: string) => pathname === path;
 
-    // تعريف المستخدم والـ Role بشكل آمن
+    // --- تعديل الـ Admin لضمان الظهور ---
     const user = session?.user as any;
-    const isAdmin = user?.role?.toUpperCase() === "ADMIN";
+    const isAdmin = user?.role?.toLowerCase() === "admin";
 
     return (
         <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 h-[70px] flex items-center transition-all duration-300" dir="rtl">
@@ -69,7 +68,7 @@ export default function Navbar() {
                     </Link>
                 </div>
 
-                {/* --- الوسط: الروابط --- */}
+                {/* --- الوسط: الروابط القائمة --- */}
                 <div className="hidden lg:flex items-center justify-center bg-gray-100/60 p-1 rounded-2xl border border-gray-100/50 mx-2 overflow-hidden">
                     {[
                         { name: "الرئيسية", href: "/" },
@@ -97,7 +96,7 @@ export default function Navbar() {
                 {/* --- اليسار: البحث والأزرار --- */}
                 <div className="flex items-center justify-end gap-3 shrink-0">
 
-                    {/* --- شريط البحث (رجعناه اهوه!) --- */}
+                    {/* البحث */}
                     <div className="hidden xl:block relative">
                         <div className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-300 border ${isFocused ? "bg-white border-blue-400 w-[250px] shadow-lg" : "bg-gray-100 border-transparent w-[180px]"}`}>
                             <Search size={16} className={isFocused ? "text-blue-600" : "text-gray-400"} />
@@ -112,8 +111,6 @@ export default function Navbar() {
                             />
                             {isSearching && <Loader2 size={14} className="animate-spin text-blue-500" />}
                         </div>
-
-                        {/* نتائج البحث المنسدلة */}
                         {query.length >= 2 && isFocused && (
                             <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden w-[300px] z-50">
                                 {results.length > 0 ? (
@@ -129,7 +126,7 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    {/* زرار النشر (يظهر للأدمن فقط - بحروف كبيرة أو صغيرة) */}
+                    {/* زرار نشر خبر للأدمن فقط */}
                     {isAdmin && (
                         <Link
                             href="/admin/dashboard"
@@ -140,7 +137,7 @@ export default function Navbar() {
                         </Link>
                     )}
 
-                    {/* التنبيهات والبروفايل */}
+                    {/* التنبيهات */}
                     {session && (
                         <div className="w-10 h-10 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-gray-400 hover:text-blue-600 cursor-pointer transition-all relative group">
                             <Bell size={18} />
@@ -148,6 +145,7 @@ export default function Navbar() {
                         </div>
                     )}
 
+                    {/* البروفايل والقائمة المنسدلة */}
                     <div className="relative">
                         {status === "loading" ? (
                             <div className="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-xl">
@@ -164,10 +162,11 @@ export default function Navbar() {
                                         <p className="text-[13px] font-black text-gray-900 leading-tight">{user?.name}</p>
                                         <p className="text-[10px] text-gray-400 font-bold mt-0.5">{user?.email}</p>
                                         <span className="inline-block mt-2 px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-black rounded-lg border border-blue-100 uppercase">
-                                            {user?.role || "USER"}
+                                            {isAdmin ? "مدير الموقع" : "مستخدم"}
                                         </span>
                                     </div>
 
+                                    {/* روابط إضافية تظهر للأدمن داخل القائمة */}
                                     {isAdmin && (
                                         <Link href="/admin/dashboard" className="flex items-center gap-3 px-5 py-2.5 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all">
                                             <LayoutDashboard size={16} className="text-gray-400" />
@@ -194,7 +193,7 @@ export default function Navbar() {
                         ) : (
                             <Link href="/login" className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-[11px] font-black hover:bg-gray-800 transition-all shadow-lg shadow-gray-200">
                                 <LogIn size={16} />
-                                <span className="hidden sm:inline">دخول</span>
+                                <span>دخول</span>
                             </Link>
                         )}
                     </div>

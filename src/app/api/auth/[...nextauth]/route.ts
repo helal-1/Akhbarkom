@@ -1,27 +1,10 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 const handler = NextAuth({
-    // 1. الأدابتور مهم لجوجل
-    adapter: PrismaAdapter(prisma),
     providers: [
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-            profile(profile) {
-                return {
-                    id: profile.sub,
-                    name: profile.name,
-                    email: profile.email,
-                    image: profile.picture,
-                    role: profile.role || "USER",
-                };
-            },
-        }),
         CredentialsProvider({
             name: "Credentials",
             credentials: {
@@ -34,33 +17,31 @@ const handler = NextAuth({
                 }
 
                 const user = await prisma.user.findUnique({
-                    where: { email: credentials.email.toLowerCase().trim() },
+                    where: {
+                        email: credentials.email.toLowerCase().trim(),
+                    },
                 });
 
-                if (!user) {
-                    throw new Error("المستخدم غير موجود");
+                if (!user || !user.password) {
+                    return null;
                 }
 
-                // جرب المقارنة العادية لو انت مخزن الباسورد نص عادي في الداتابيز
-                const isValid = credentials.password === user.password;
+                const isValid = await bcrypt.compare(credentials.password, user.password);
 
                 if (!isValid) {
-                    throw new Error("كلمة المرور غير صحيحة");
+                    return null;
                 }
 
                 return {
                     id: user.id,
                     name: user.name,
                     email: user.email,
-                    role: user.role,
+                    role: user.role, // الرتبة من الداتابيز
                 };
             },
         }),
     ],
-    // 2. أهم سطر عشان الـ Credentials تشتغل مع الأدابتور
-    session: {
-        strategy: "jwt",
-    },
+    // --- الجزء المفقود اللي ضفتهولك هنا ---
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
@@ -77,11 +58,15 @@ const handler = NextAuth({
             return session;
         },
     },
+    // ------------------------------------
+    session: {
+        strategy: "jwt",
+    },
+    secret: process.env.NEXTAUTH_SECRET,
     pages: {
         signIn: "/login",
         error: "/login",
     },
-    secret: process.env.NEXTAUTH_SECRET,
 });
 
 export { handler as GET, handler as POST };

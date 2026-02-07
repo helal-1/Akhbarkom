@@ -4,11 +4,13 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-    const hashedPassword = await bcrypt.hash("123456", 10); // الباسورد هيكون 123456
+    const hashedPassword = await bcrypt.hash("123456", 10);
 
     const user = await prisma.user.upsert({
         where: { email: "admin@akhbarkom.com" },
-        update: {},
+        update: {
+            password: hashedPassword, // بنأكد تحديث الباسورد لو اليوزر موجود
+        },
         create: {
             email: "admin@akhbarkom.com",
             name: "مدير الموقع",
@@ -17,7 +19,7 @@ async function main() {
         },
     });
 
-    console.log("تم إنشاء المستخدم بنجاح:", user.email);
+    console.log("✅ تم إنشاء/تحديث المستخدم بنجاح: admin@akhbarkom.com");
 }
 
 main()
