@@ -1,7 +1,7 @@
 "use client";
 import Image from 'next/image';
 import Link from 'next/link';
-import { Clock, User, ArrowLeft, Sparkles } from 'lucide-react';
+import { Clock, User, ArrowLeft, Sparkles, Newspaper } from 'lucide-react';
 
 interface Article {
     id: string;
@@ -14,6 +14,21 @@ interface Article {
     author_name?: string;
 }
 
+// خريطة الألوان للأقسام لتسهيل التمييز البصري
+const categoryColors: Record<string, string> = {
+    politics: "text-emerald-600 bg-emerald-50 border-emerald-100",
+    sports: "text-orange-600 bg-orange-50 border-orange-100",
+    tech: "text-blue-600 bg-blue-50 border-blue-100",
+    economy: "text-purple-600 bg-purple-50 border-purple-100",
+    health: "text-red-600 bg-red-50 border-red-100",
+    urgent: "text-white bg-red-600 border-red-600",
+};
+
+const categoryLabels: Record<string, string> = {
+    politics: "سياسة", sports: "رياضة", tech: "تكنولوجيا",
+    economy: "اقتصاد", health: "صحة", urgent: "عاجل", Accidents: "حوادث"
+};
+
 export default function NewsCard({ article }: { article: Article }) {
 
     const formatDate = (dateString?: string) => {
@@ -25,76 +40,74 @@ export default function NewsCard({ article }: { article: Article }) {
         });
     };
 
-    return (
-        <Link href={`/news/${article.slug}`} className="block group mb-6">
-            <div className="relative bg-white/70 backdrop-blur-md border border-gray-250 rounded-[24px] p-4 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.04)] hover:-translate-y-1 flex flex-col md:flex-row gap-6 items-center" dir="rtl">
+    const catStyle = categoryColors[article.category || ""] || "text-gray-600 bg-gray-50 border-gray-100";
+    const catLabel = categoryLabels[article.category || ""] || article.category || "أخبار";
 
-                {/* 1. الصورة بتأثير زجاجي وحواف ناعمة */}
-                <div className="relative w-full md:w-48 h-48 shrink-0 rounded-[20px] overflow-hidden shadow-indigo-100/50 shadow-xl">
+    return (
+        <Link href={`/news/${article.slug}`} className="block group">
+            <div className="relative bg-white border-2 border-gray-100 rounded-[24px] p-4 transition-all duration-500 hover:shadow-[0_15px_40px_rgba(0,0,0,0.03)] hover:border-blue-100 flex flex-col md:flex-row gap-5 items-center overflow-hidden" dir="rtl">
+
+                {/* 1. الصورة مع تأثير الحوم */}
+                <div className="relative w-full md:w-52 h-44 shrink-0 rounded-[20px] overflow-hidden">
                     <Image
                         src={article.image_url || "/placeholder.jpg"}
                         alt={article.title}
                         fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                         unoptimized
                     />
-                    {/* وسم القسم بتصميم عصري */}
-                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-blue-600 text-[10px] px-3 py-1.5 rounded-full font-black shadow-sm flex items-center gap-1.5">
-                        <Sparkles size={10} className="text-orange-400" />
-                        {article.category || "أخبار"}
+                    {/* Tag القسم التفاعلي */}
+                    <div className={`absolute top-3 right-3 backdrop-blur-md border text-[10px] px-3 py-1.5 rounded-full font-black shadow-sm flex items-center gap-1.5 transition-transform group-hover:-translate-y-1 ${catStyle}`}>
+                        <Sparkles size={10} className={article.category === 'urgent' ? 'text-white' : 'text-orange-400'} />
+                        {catLabel}
                     </div>
                 </div>
 
-                {/* 2. المحتوى والتفاصيل */}
-                <div className="flex flex-col flex-1 w-full py-1">
+                {/* 2. المحتوى */}
+                <div className="flex flex-col flex-1 w-full">
 
-                    {/* الهوية البصرية الصغيرة */}
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="relative w-5 h-5 rounded-lg overflow-hidden border border-gray-50 shadow-sm">
-                            <Image
-                                src="/logo.png"
-                                alt="Logo"
-                                fill
-                                className="object-cover"
-                                unoptimized
-                            />
-                        </div>
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">أخباركم PORTAL</span>
+                    {/* الهوية البصرية */}
+                    <div className="flex items-center gap-2 mb-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <Newspaper size={12} className="text-blue-600" />
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">أخباركم PORTAL</span>
                     </div>
 
-                    {/* عنوان الخبر - خط عريض وأنيق */}
-                    <h2 className="text-xl md:text-2xl font-black text-gray-900 mb-3 line-clamp-2 leading-[1.4] group-hover:text-blue-600 transition-colors duration-300">
+                    {/* عنوان الخبر */}
+                    <h2 className="text-lg md:text-xl font-black text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-blue-600 transition-colors duration-300">
                         {article.title}
                     </h2>
 
-                    {/* الوصف المختصر */}
-                    <p className="text-sm text-gray-500 line-clamp-2 mb-4 leading-relaxed font-medium opacity-80">
+                    {/* المحتوى المختصر */}
+                    <p className="text-[13px] text-gray-500 line-clamp-2 mb-4 leading-relaxed font-medium">
                         {article.content}
                     </p>
 
-                    {/* الفوتر الخاص بالكارت */}
-                    <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4">
-                        <div className="flex items-center gap-4 text-[11px] font-bold">
-                            <div className="flex items-center gap-2 bg-blue-50/50 px-3 py-1.5 rounded-full text-blue-600 border border-blue-50/50">
-                                <User size={12} strokeWidth={3} />
+                    {/* الفوتر */}
+                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1.5 text-gray-400 text-[11px] font-bold">
+                                <User size={12} className="text-gray-300" />
                                 <span>{article.author_name || "المسؤول"}</span>
                             </div>
 
-                            <div className="flex items-center gap-1.5 text-gray-400">
-                                <Clock size={12} />
+                            <div className="flex items-center gap-1.5 text-gray-400 text-[11px] font-bold">
+                                <Clock size={12} className="text-gray-300" />
                                 <span>{formatDate(article.created_at)}</span>
                             </div>
                         </div>
 
-                        {/* زر الانتقال التفاعلي */}
-                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white group-hover:rotate-0 rotate-45 transition-all duration-500">
-                            <ArrowLeft size={16} strokeWidth={3} />
+                        {/* سهم الانتقال بشكله الجديد */}
+                        <div className="flex items-center gap-2 text-blue-600 font-black text-[11px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
+                            اقرأ المزيد
+                            <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center -rotate-45 group-hover:rotate-0 transition-all">
+                                <ArrowLeft size={14} strokeWidth={3} />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* تأثير الإضاءة عند الحوم (اختياري) */}
-                <div className="absolute inset-0 rounded-[24px] border-2 border-transparent group-hover:border-blue-500/5 transition-all duration-500 pointer-events-none"></div>
+                {/* خط تجميلي جانبي يظهر عند الحوم */}
+                <div className="absolute right-0 top-0 bottom-0 w-1 bg-blue-600 scale-y-0 group-hover:scale-y-100 transition-transform origin-bottom duration-500"></div>
             </div>
         </Link>
     );
