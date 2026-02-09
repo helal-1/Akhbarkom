@@ -7,13 +7,13 @@ import {
     Youtube,
     Mail,
     Phone,
-    Globe
+    Globe,
+    Code2
 } from "lucide-react";
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
 
-    // قائمة الأقسام من الـ Navbar
     const newsLinks = [
         { name: "الرئيسية", href: "/" },
         { name: "سياسة", href: "/category/politics" },
@@ -25,7 +25,6 @@ export default function Footer() {
         { name: "شخصيات", href: "/category/Characters" },
     ];
 
-    // تقسيم الروابط: أول 5 في مجموعة، والباقي في مجموعة ثانية
     const firstGroup = newsLinks.slice(0, 5);
     const secondGroup = newsLinks.slice(5);
 
@@ -70,9 +69,8 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* الأعمدة الوسطى: روابط الأقسام (مقسمة لعمودين) + عن أخباركم */}
+                    {/* الأعمدة الوسطى */}
                     <div className="lg:col-span-6 grid grid-cols-2 md:grid-cols-3 gap-8">
-                        {/* عمود الأقسام 1 (أول 5) */}
                         <div>
                             <h3 className="text-gray-900 font-black mb-6 text-base border-r-4 border-blue-600 pr-3">الأقسام</h3>
                             <ul className="space-y-4">
@@ -87,7 +85,6 @@ export default function Footer() {
                             </ul>
                         </div>
 
-                        {/* عمود الأقسام 2 (الباقي) */}
                         <div>
                             <h3 className="text-gray-900 font-black mb-6 text-base border-r-4 border-blue-600 pr-3">المزيد</h3>
                             <ul className="space-y-4">
@@ -102,7 +99,6 @@ export default function Footer() {
                             </ul>
                         </div>
 
-                        {/* عمود عن الموقع */}
                         <div>
                             <h3 className="text-gray-900 font-black mb-6 text-base border-r-4 border-blue-600 pr-3">عن أخباركم</h3>
                             <ul className="space-y-4">
@@ -141,12 +137,30 @@ export default function Footer() {
 
                 </div>
 
-                {/* الجزء السفلي: الحقوق */}
+                {/* الجزء السفلي: الحقوق + زر المطور الجديد */}
                 <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
                     <p className="text-gray-400 font-bold text-xs text-center md:text-right">
                         © {currentYear} <span className="text-blue-600">أخباركم</span>. جميع الحقوق محفوظة.
                     </p>
-                
+
+                    {/* --- قسم المطور المضاف --- */}
+                    <Link href="/developer" className="group flex items-center gap-4 bg-gray-50/50 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5 px-5 py-2.5 rounded-2xl border border-gray-100 transition-all duration-300">
+                        <div className="flex flex-col text-left md:text-right">
+                            <span className="text-[9px] text-gray-400 font-black uppercase tracking-widest leading-none mb-1">Developer</span>
+                            <span className="text-sm font-black text-gray-800 group-hover:text-blue-600 transition-colors">م/ محمد هلال</span>
+                        </div>
+                        <div className="relative w-10 h-10 rounded-xl overflow-hidden border-2 border-white shadow-sm shrink-0">
+                            <Image
+                                src="/developer.jpeg"
+                                alt="المطور"
+                                fill
+                                className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                            />
+                        </div>
+                        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-gray-300 group-hover:text-blue-600 group-hover:bg-blue-50 transition-all border border-gray-50 shadow-sm">
+                            <Code2 size={16} />
+                        </div>
+                    </Link>
                 </div>
 
             </div>
