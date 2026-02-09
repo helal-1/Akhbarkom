@@ -4,12 +4,21 @@ import AdSlider from "@/components/AdSlider";
 import Link from "next/link";
 import HomeHeroSlider from "@/components/HomeHeroSlider";
 import UrgentTicker from "@/components/UrgentTicker";
+import { Zap, Clock, MessageCircle } from "lucide-react";
 
-import {
-  Zap,
-  Clock,
-  MessageCircle,
-} from "lucide-react";
+// ضمان تحديث البيانات فوراً عند إضافة خبر من الهاتف
+export const revalidate = 0;
+
+// تعريف نوع البيانات بدقة لإرضاء TypeScript و ESLint
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  category: string;
+  content: string;
+  image_url: string;
+  created_at?: string;
+}
 
 interface HomeProps {
   searchParams: Promise<{ page?: string }>;
@@ -34,14 +43,15 @@ export default async function Home({ searchParams }: HomeProps) {
     .select("*")
     .order("created_at", { ascending: false });
 
-  const latestSidebarArticles = allArticles?.slice(0, 5) || [];
-  const tickerArticles = allArticles?.slice(0, 10) || [];
+  const latestSidebarArticles = (allArticles as Article[])?.slice(0, 5) || [];
+  const tickerArticles = (allArticles as Article[])?.slice(0, 10) || [];
 
-  // 2. تجهيز الأخبار المميزة لكل قسم
-  const featuredArticlesByCategory = allArticles?.reduce((acc: Record<string, any[]>, article) => {
-    const cat = article.category;
+  // 2. تجهيز الأخبار لكل قسم مع تجنب استخدام any
+  const featuredArticlesByCategory = (allArticles as Article[])?.reduce((acc: Record<string, Article[]>, article: Article) => {
+    const cat = article.category || "عام";
     if (!acc[cat]) acc[cat] = [];
-    if (acc[cat].length < 3) acc[cat].push(article);
+    // نأخذ حتى 10 أخبار لكل قسم لضمان وصول المنشور الجديد للسلايدر
+    if (acc[cat].length < 10) acc[cat].push(article);
     return acc;
   }, {}) || {};
 
@@ -55,7 +65,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
       <div className="max-w-[1500px] mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mt-6">
 
-        {/* --- السايدبار الأيمن (أحدث النشر) --- */}
+        {/* --- السايدبار الأيمن --- */}
         <aside className="hidden lg:block lg:col-span-3">
           <div className="sticky top-24 space-y-6">
             <div className="bg-white rounded-[24px] p-6 border-2 border-gray-100 shadow-sm">
@@ -74,22 +84,18 @@ export default async function Home({ searchParams }: HomeProps) {
                 ))}
               </div>
             </div>
-
-            {/* إعلان إضافي في السايدبار الأيمن لو حبيت */}
             <AdSlider placement="sidebar" />
           </div>
         </aside>
 
         {/* --- المنتصف (المحتوى الرئيسي) --- */}
         <div className="col-span-1 lg:col-span-6 space-y-10">
-
-          <div className="overflow-hidden rounded-[24px] md:rounded-[32px]">
+          <div className="overflow-hidden rounded-3xl md:rounded-4xl">
             <HomeHeroSlider articlesByCategory={featuredArticlesByCategory} />
           </div>
 
-          {/* عرض الأقسام مع الإعلانات البينية الذكية */}
           {Object.entries(categoriesMap).map(([categoryInDb, data], index) => {
-            const sectionArticles = allArticles?.filter(a => a.category === categoryInDb).slice(0, 4) || [];
+            const sectionArticles = (allArticles as Article[])?.filter(a => a.category === categoryInDb).slice(0, 4) || [];
             if (sectionArticles.length === 0) return null;
 
             return (
@@ -118,14 +124,12 @@ export default async function Home({ searchParams }: HomeProps) {
                   </div>
                 </section>
 
-                {/* --- إعلانات بين الأقسام (تظهر كل قسمين) --- */}
                 {(index + 1) % 2 === 0 && (
                   <div className="py-4 border-y border-gray-100/50">
                     <div className="flex items-center gap-2 mb-3 px-2">
                       <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">إعلان ممول</span>
                       <div className="h-[1px] bg-gray-100 flex-1"></div>
                     </div>
-                    {/* طلب إعلانات "بين الأقسام" فقط */}
                     <AdSlider placement="between_sections" />
                   </div>
                 )}
@@ -134,17 +138,14 @@ export default async function Home({ searchParams }: HomeProps) {
           })}
         </div>
 
-        {/* --- السايدبار الأيسر (الإعلانات والتواصل) --- */}
+        {/* --- السايدبار الأيسر --- */}
         <aside className="col-span-1 lg:col-span-3 space-y-6">
           <div className="lg:sticky lg:top-24 space-y-6">
-
-            {/* إعلانات السايدبار المخصصة */}
             <div className="bg-white rounded-[24px] border-2 border-gray-100 p-4 shadow-sm overflow-hidden">
               <h3 className="text-sm font-black text-gray-800 mb-4 px-2">دليل طامية التجاري</h3>
               <AdSlider placement="sidebar" />
             </div>
 
-            {/* قسم التواصل */}
             <div className="hidden lg:block bg-[#1E293B] rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl border border-slate-800">
               <div className="relative z-10">
                 <div className="w-12 h-12 bg-blue-600/20 rounded-2xl flex items-center justify-center mb-6">
@@ -168,7 +169,6 @@ export default async function Home({ searchParams }: HomeProps) {
                 </div>
               </div>
             </div>
-
           </div>
         </aside>
 
