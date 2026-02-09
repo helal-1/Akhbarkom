@@ -138,7 +138,7 @@ export default function AddNewsPage() {
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-4 py-3 md:px-6 md:py-5 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl focus:border-blue-600 focus:bg-white outline-none font-bold text-gray-900 cursor-pointer appearance-none text-sm md:text-base"
               >
-                {["سياسة", "رياضة", "اقتصاد", "صحة", "عاجل", "حوادث", "شخصيات"].map(cat => (
+                {["سياسة", "رياضة", "اقتصاد", "صحة", "عاجل", "حوادث", "شخصيات", "تعليم", "دليل طامية"].map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>

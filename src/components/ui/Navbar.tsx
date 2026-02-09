@@ -39,6 +39,8 @@ export default function Navbar() {
         { name: "صحة", href: "/category/health" },
         { name: "حوادث", href: "/category/Accidents" },
         { name: "شخصيات", href: "/category/Characters" },
+        { name: "تعليم", href: "/category/education" },
+        { name: "دليل طامية", href: "/category/tamiyat" },
     ];
 
     // إغلاق القوائم عند الضغط خارجها

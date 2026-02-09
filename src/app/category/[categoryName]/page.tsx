@@ -17,7 +17,9 @@ const categoriesMap: Record<string, string> = {
   Characters: "شخصيات",
   politics: "سياسة",
   sports: "رياضة",
-  economy: "اقتصاد"
+  economy: "اقتصاد",
+  education: "تعليم",
+  tamiyat: "دليل طامية",
 };
 
 export default async function CategoryPage({ params, searchParams }: PageProps) {
