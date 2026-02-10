@@ -53,7 +53,7 @@ export default function NewsCard({ article }: { article: Article }) {
                         src={article.image_url || "/placeholder.jpg"}
                         alt={article.title}
                         fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-full transition-transform duration-700 group-hover:scale-105"
                         unoptimized
                     />
                     {/* Tag القسم التفاعلي */}

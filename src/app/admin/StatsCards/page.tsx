@@ -25,41 +25,37 @@ export default function DashboardStats() {
     const fetchStats = useCallback(async () => {
         setLoading(true);
         try {
-            // 1. جلب بيانات المقالات من الجدول الصحيح (articles)
+            // 1. جلب بيانات المقالات - نستخدم عمود views هنا
             const { data: articlesData, error: articlesError } = await supabase
                 .from('articles')
-                .select('views_count');
+                .select('views, category'); // تأكدنا إن الاسم views
 
             if (articlesError) throw articlesError;
 
-            const totalViews = articlesData?.reduce((acc, curr) => acc + (Number(curr.views_count) || 0), 0) || 0;
+            // حساب إجمالي المشاهدات من عمود views
+            const totalViews = articlesData?.reduce((acc, curr) => {
+                // تحويل القيمة لرقم والتأكد إنها مش Null
+                return acc + (Number(curr.views) || 0);
+            }, 0) || 0;
+
             const articlesCount = articlesData?.length || 0;
 
-            // 2. جلب إحصائيات الرسائل (contact_messages)
+            // حساب عدد الأقسام بناءً على القيم الموجودة في المقالات
+            const uniqueCategories = new Set(articlesData?.map(a => a.category).filter(Boolean));
+            const categoriesCount = uniqueCategories.size;
+
+            // 2. جلب إحصائيات الرسائل (لو الجدول موجود)
             const { count: msgs } = await supabase
                 .from('contact_messages')
                 .select('*', { count: 'exact', head: true });
 
-            const { count: unread } = await supabase
-                .from('contact_messages')
-                .select('*', { count: 'exact', head: true })
-                .eq('is_read', false);
-
-            // 3. جلب عدد الأقسام (categories)
-            const { count: cats } = await supabase
-                .from('categories')
-                .select('*', { count: 'exact', head: true });
-
-            // 4. حساب الزوار (بما أن جدول visitors غير موجود، نستخدم الحسبة التقريبية)
-            const actualVisitors = Math.floor(totalViews * 0.85);
-
             setStats({
                 newsCount: articlesCount,
                 messagesCount: msgs || 0,
-                categoriesCount: cats || 0,
-                unreadMessages: unread || 0,
-                totalViews,
-                uniqueVisitors: actualVisitors
+                categoriesCount: categoriesCount,
+                unreadMessages: 0,
+                totalViews, // القيمة اللي اتجمعت من عمود views
+                uniqueVisitors: Math.floor(totalViews * 0.85) // حسبة تقديرية للزوار
             });
 
         } catch (error) {

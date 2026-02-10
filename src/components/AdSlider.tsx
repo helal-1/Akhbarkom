@@ -109,7 +109,7 @@ export default function AdSlider({ placement = "sidebar" }: AdSliderProps) {
                                     src={ad.image_url}
                                     alt={ad.title || "إعلان"}
                                     fill
-                                    className="object-cover transition-transform duration-[2000ms] group-hover/ad:scale-110"
+                                    className="object-fill w-full h-full transition-transform duration-[2000ms] group-hover/ad:scale-110"
                                     unoptimized
                                     priority
                                 />

@@ -21,10 +21,12 @@ import {
     ExternalLink
 } from "lucide-react";
 
+// استيراد المكونات الأخرى (تأكد من صحة المسارات لديك)
 import AddNewsPage from "../add-news/page";
 import AddAdPage from "../add-ad/page";
 import ManageNews from "@/components/admin/ManageNews";
 import AdminMessages from "../messages/page";
+import ManageAdmins from "../manage-users/page";
 
 // --- مكون الإحصائيات (Stats Dashboard) ---
 function DashboardStats() {
@@ -38,43 +40,52 @@ function DashboardStats() {
     });
     const [loading, setLoading] = useState(true);
 
-    // استخدام useCallback يمنع إعادة تعريف الدالة إلا لو تغيرت التبعيات
     const fetchStats = useCallback(async () => {
         setLoading(true);
         try {
-            // جلب المشاهدات من عمود views_count في جدول articles
-            const { data: articlesData } = await supabase.from('articles').select('views_count');
-            const totalViews = articlesData?.reduce((acc, curr) => acc + (Number(curr.views_count) || 0), 0) || 0;
+            // 1. جلب بيانات المقالات والمشاهدات
+            const { data: articlesData, error: articlesError } = await supabase
+                .from('articles')
+                .select('views, category');
+
+            if (articlesError) throw articlesError;
+
+            const totalViews = articlesData?.reduce((acc, curr) => acc + (Number(curr.views) || 0), 0) || 0;
             const articlesCount = articlesData?.length || 0;
+            const uniqueCategories = new Set(articlesData?.map(a => a.category).filter(Boolean));
 
-            const { count: msgs } = await supabase.from('contact_messages').select('*', { count: 'exact', head: true });
-            const { count: unread } = await supabase.from('contact_messages').select('*', { count: 'exact', head: true }).eq('is_read', false);
-            const { count: cats } = await supabase.from('categories').select('*', { count: 'exact', head: true });
+            // 2. جلب إحصائيات الرسائل (الإجمالي والغير مقروء)
+            // جلب إجمالي الرسائل
+            const { count: totalMsgs } = await supabase
+                .from('contact_messages')
+                .select('*', { count: 'exact', head: true });
 
-            // نحدث الـ State مرة واحدة في النهاية
+            // جلب الرسائل غير المقروءة فقط
+            const { count: unreadMsgs } = await supabase
+                .from('contact_messages')
+                .select('*', { count: 'exact', head: true })
+                .eq('is_read', false);
+
+            // تحديث الحالة "مرة واحدة" بكل البيانات المجلوبة
             setStats({
                 newsCount: articlesCount,
-                messagesCount: msgs || 0,
-                categoriesCount: cats || 0,
-                unreadMessages: unread || 0,
+                messagesCount: totalMsgs || 0,
+                categoriesCount: uniqueCategories.size,
+                unreadMessages: unreadMsgs !== null ? unreadMsgs : (totalMsgs || 0),
                 totalViews: totalViews,
-                uniqueVisitors: Math.floor(totalViews * 0.82)
+                uniqueVisitors: Math.floor(totalViews * 0.85)
             });
-        } catch (e) {
-            console.error("Fetch Error:", e);
+
+        } catch (error) {
+            console.error("Error fetching stats:", error);
         } finally {
             setLoading(false);
         }
     }, []);
 
-    // الحل لمشكلة ESLint: استدعاء الدالة داخل useEffect بشكل نظيف
     useEffect(() => {
-        let isMounted = true;
-        if (isMounted) {
-            fetchStats();
-        }
-        return () => { isMounted = false; };
-    }, [fetchStats]); // fetchStats هنا مستقرة بسبب useCallback
+        fetchStats();
+    }, [fetchStats]);
 
     const cards = [
         { title: "إجمالي المشاهدات", value: stats.totalViews.toLocaleString(), icon: <Eye size={24} />, color: "bg-blue-600", shadow: "shadow-blue-100" },
@@ -91,7 +102,7 @@ function DashboardStats() {
                     <p className="text-slate-400 text-sm font-bold">تحديث فوري لأداء المنصة</p>
                 </div>
                 <button
-                    onClick={() => fetchStats()}
+                    onClick={fetchStats}
                     disabled={loading}
                     className="p-3 bg-white rounded-2xl shadow-sm text-slate-400 hover:text-blue-600 transition-all border border-slate-100 active:scale-95 disabled:opacity-50"
                 >
@@ -127,19 +138,30 @@ function DashboardStats() {
     );
 }
 
-// الكود الباقي (AdminDashboard) يظل كما هو
+// --- المكون الرئيسي (Admin Dashboard) ---
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState("stats");
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
+    const menuItems = [
+        { id: "stats", name: "لوحة الإحصائيات", icon: LayoutDashboard },
+        { id: "manage", name: "إدارة الأخبار", icon: ListVideo },
+        { id: "news", name: "إضافة خبر", icon: FilePlus2 },
+        { id: "messages", name: "رسائل الزوار", icon: Mail, color: "bg-emerald-500" },
+        { id: "ads", name: "الإعلانات", icon: MonitorPlay, color: "bg-orange-500" },
+        { id: "admins", name: "إدارة الإدمن", icon: Users, color: "bg-blue-600" },
+    ];
+
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex text-right font-sans" dir="rtl">
+            {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div className="fixed inset-0 bg-black/50 z-[55] lg:hidden backdrop-blur-sm" onClick={toggleSidebar} />
             )}
 
+            {/* Sidebar */}
             <aside className={`fixed inset-y-0 right-0 w-72 bg-[#1E293B] flex flex-col h-screen shadow-2xl z-[60] transition-transform duration-300 lg:translate-x-0 lg:sticky lg:top-0 ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}`}>
                 <div className="p-8 mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -155,13 +177,7 @@ export default function AdminDashboard() {
 
                 <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
                     <p className="text-[10px] font-black text-slate-500 px-4 mb-4 uppercase tracking-[0.15em]">نظرة عامة</p>
-                    {[
-                        { id: "stats", name: "لوحة الإحصائيات", icon: LayoutDashboard },
-                        { id: "manage", name: "إدارة الأخبار", icon: ListVideo },
-                        { id: "news", name: "إضافة خبر", icon: FilePlus2 },
-                        { id: "messages", name: "رسائل الزوار", icon: Mail, color: "bg-emerald-500" },
-                        { id: "ads", name: "الإعلانات", icon: MonitorPlay, color: "bg-orange-500" }
-                    ].map((item) => (
+                    {menuItems.map((item) => (
                         <button
                             key={item.id}
                             onClick={() => { setActiveTab(item.id); setIsSidebarOpen(false); }}
@@ -181,6 +197,7 @@ export default function AdminDashboard() {
                 </div>
             </aside>
 
+            {/* Main Content */}
             <main className="flex-1 flex flex-col h-screen overflow-hidden">
                 <header className="h-20 bg-white border-b border-slate-100 px-6 md:px-10 flex items-center justify-between shrink-0 z-40">
                     <div className="flex items-center gap-4">
@@ -188,11 +205,7 @@ export default function AdminDashboard() {
                             <Menu size={24} />
                         </button>
                         <h3 className="text-xl font-black text-slate-800">
-                            {activeTab === "stats" && "لوحة الإحصائيات"}
-                            {activeTab === "manage" && "إدارة الأخبار المنشورة"}
-                            {activeTab === "news" && "إضافة محتوى جديد"}
-                            {activeTab === "messages" && "بريد الزوار"}
-                            {activeTab === "ads" && "إدارة الإعلانات"}
+                            {menuItems.find(i => i.id === activeTab)?.name}
                         </h3>
                     </div>
                     <Link
@@ -212,6 +225,7 @@ export default function AdminDashboard() {
                             {activeTab === "news" && <AddNewsPage />}
                             {activeTab === "ads" && <AddAdPage />}
                             {activeTab === "messages" && <AdminMessages />}
+                            {activeTab === "admins" && <ManageAdmins />}
                         </div>
                     </div>
                 </div>

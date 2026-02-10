@@ -55,7 +55,7 @@ export default function HomeHeroSlider({ articlesByCategory }: HomeHeroSliderPro
                                 src={article.image_url || "/placeholder.jpg"}
                                 alt={article.title}
                                 fill
-                                className="object-cover transition-transform duration-[10s] opacity-80"
+                                className="object-fill transition-transform duration-[10s] opacity-80"
                                 priority
                                 unoptimized
                             />
